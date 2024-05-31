@@ -37,7 +37,7 @@ def robonomics_transaction_callback(data):
 
 def launch_robonomics_subsciber():
     account = Account()
-    subscriber = Subscriber(account, SubEvent.Transfer, robonomics_transaction_callback=callback, addr="4FNQo2tK6PLeEhNEUuPePs8B8xKNwx15fX7tC2XnYpkC8W1j")
+    subscriber = Subscriber(account, SubEvent.Transfer, subscription_handler=robonomics_transaction_callback, addr="4FNQo2tK6PLeEhNEUuPePs8B8xKNwx15fX7tC2XnYpkC8W1j")
 
 
 if __name__=='__main__':
