@@ -1,5 +1,5 @@
 import os
-import robonomicsinterface as RI
+from robonomicsinterface import Subscriber, SubEvent, Account
 import requests
 import time
 from spot_controller import SpotController
@@ -8,24 +8,10 @@ ROBOT_IP = "192.168.80.3"#os.environ['ROBOT_IP']
 SPOT_USERNAME = "admin"#os.environ['SPOT_USERNAME']
 SPOT_PASSWORD = "2zqa8dgw7lor"#os.environ['SPOT_PASSWORD']
 
-# Get account where launch would be sent and IPFS gateway where metadata is stored
-ROBONOMICS_LISTEN_ROBOT_ACCOUNT = os.environ.get("ROBONOMICS_LISTEN_ROBOT_ACCOUNT")
-IPFS_COMMAND_GATEWAY = os.getenv('IPFS_COMMAND_GATEWAY')
 
-
-def robonomics_transaction_callback(data, launch_event_id):
-    # Receive sender, recipient and metadata
-    sender, recipient, command_params_32_bytes = data
-
-    # Convert metadata to IPFS hash
-    command_params_ipfs_hash = RI.ipfs_32_bytes_to_qm_hash(command_params_32_bytes)
-
-    # Receive json with data from IPFS Gateway
-    message = requests.get(f'{IPFS_COMMAND_GATEWAY}/{command_params_ipfs_hash}').json()
-
-    print('Got message from', sender)
-    print('launch id', launch_event_id)
-    print(message)
+def robonomics_transaction_callback(data):
+    
+    print('Got message', data)
 
     # Use wrapper in context manager to lease control, turn on E-Stop, power on robot and stand up at start
     # and to return lease + sit down at the end
@@ -50,13 +36,8 @@ def robonomics_transaction_callback(data, launch_event_id):
     exit(0)
 
 def launch_robonomics_subsciber():
-    # Connect to Robonomic's RPC node
-    interface = RI.Account(remote_ws="wss://kusama.rpc.robonomics.network")
-    print("Robonomics subscriber starting...")
-
-    # Start subscriber to listen to any new Launch send to listening account
-    subscriber = RI.Subscriber(interface, RI.SubEvent.NewLaunch, robonomics_transaction_callback,
-                               ROBONOMICS_LISTEN_ROBOT_ACCOUNT)
+    account = Account()
+    subscriber = Subscriber(account, SubEvent.Transfer, robonomics_transaction_callback=callback, addr="4FNQo2tK6PLeEhNEUuPePs8B8xKNwx15fX7tC2XnYpkC8W1j")
 
 
 if __name__=='__main__':
